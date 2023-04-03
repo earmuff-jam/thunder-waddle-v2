@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-
 export const inspirationBaseUrl = 'https://api.goprogram.ai/inspiration';
 export const publicHolidayBaseUrl = 'https://date.nager.at/api/v3/PublicHolidays/';
 export const defaultTimeZone = 'MST7MDT'; // mountain zone
@@ -34,55 +33,11 @@ export const queryParams = [
     'daily',
     'timezone',
 ];
-
 export const usePopupBuilder = () => {
     const [loading, setLoading] = useState(true);
     const [pageDetails, setPageDetails] = useState({ ...blankQuotes });
     const [holiday, setHoliday] = useState({ ...blankHoliday });
     const [currentWeather, setCurrentWeather] = useState({ ...blankWeather });
-    const fetchQuotes = async () => {
-        const url = inspirationBaseUrl;
-        const response = await fetch(url, {
-            method: 'GET',
-            mode: 'cors',
-            cache: 'no-cache',
-            headers: {
-            },
-            redirect: "follow"
-        }).then(response => response.json());
-        const copyQuote = { ...pageDetails };
-        copyQuote['author'] = response?.author;
-        copyQuote['quote'] = response?.quote;
-        setPageDetails({ ...copyQuote });
-    };
-    const fetchHolidays = async () => {
-        const baseUrl = publicHolidayBaseUrl;
-        const date = new Date();
-        const currentYear = date.getFullYear();
-        const formattedDate = date.toISOString().split('T')[0];
-        const completeUrl = baseUrl + currentYear + '/' + defaultCountrySelection;
-        const response = await fetch(completeUrl, {
-            method: 'GET',
-            mode: 'cors',
-            cache: 'no-cache',
-            redirect: 'follow'
-        }).then(response => response.json());
-        const selectedDate = response?.reduce((acc, el) => {
-            if (formattedDate === el.date) {
-                acc['date'] = el.date;
-                acc['localName'] = el.localName;
-                acc['name'] = el.name;
-            }
-            return acc;
-        }, {});
-        const copyHoliday = { ...holiday };
-        if (Object.values(selectedDate).length < 1) {
-            copyHoliday.date = formattedDate;
-            copyHoliday.localName = 'No public holiday today';
-            copyHoliday.name = 'No public holiday today'
-        };
-        setHoliday({ ...copyHoliday });
-    };
     const showPosition = async (position) => {
         const { coords } = position;
         const { latitude, longitude } = coords;
@@ -107,19 +62,68 @@ export const usePopupBuilder = () => {
         copyWeather.current_rain = rain_sum[0];
         copyWeather.current_day_sunrise = sunrise[0].split('T')[1];
         copyWeather.current_day_sunset = sunset[0].split('T')[1];
-        console.log(copyWeather);
         setCurrentWeather({ ...copyWeather });
-        setLoading(false);
     };
     const fetchWeather = () => {
         navigator.geolocation.getCurrentPosition(showPosition);
     }
+    const fetchQuotesV2 = async () => {
+        const url = inspirationBaseUrl;
+        const response = await fetch(url, {
+            method: 'GET',
+            mode: 'cors',
+            cache: 'no-cache',
+            headers: {
+            },
+            redirect: "follow"
+        });
+        return response;
+    };
+    const fetchHolidaysV2 = () => {
+        const baseUrl = publicHolidayBaseUrl;
+        const date = new Date();
+        const currentYear = date.getFullYear();
+        const completeUrl = baseUrl + currentYear + '/' + defaultCountrySelection;
+        const response = fetch(completeUrl, {
+            method: 'GET',
+            mode: 'cors',
+            cache: 'no-cache',
+            redirect: 'follow'
+        });
+        return response;
+    }
     useEffect(() => {
-        fetchQuotes();
-        fetchHolidays();
+        Promise.all([fetchHolidaysV2, fetchQuotesV2])
+            .then(([res1, res2]) => {
+                return Promise.all([res1(), res2()])
+            })
+            .then(([response1, response2]) => {
+                return Promise.all([response1.json(), response2.json()])
+            }).then(([response1Json, response2Json]) => {
+                const date = new Date();
+                const formattedDate = date.toISOString().split('T')[0];
+                const selectedDate = response1Json?.reduce((acc, el) => {
+                    if (formattedDate === el.date) {
+                        acc['date'] = el.date;
+                        acc['localName'] = el.localName;
+                        acc['name'] = el.name;
+                    }
+                    return acc;
+                }, {});
+                const copyHoliday = { ...holiday };
+                if (Object.values(selectedDate).length < 1) {
+                    copyHoliday.date = formattedDate;
+                    copyHoliday.localName = 'No public holiday today';
+                    copyHoliday.name = 'No public holiday today'
+                };
+                setHoliday({ ...copyHoliday });
+                const copyQuote = { ...pageDetails };
+                copyQuote['author'] = response2Json?.author;
+                copyQuote['quote'] = response2Json?.quote;
+                setPageDetails({ ...copyQuote });
+            }).finally(() => setLoading(false));
         fetchWeather();
     }, []);
-
     return {
         loading,
         pageDetails,

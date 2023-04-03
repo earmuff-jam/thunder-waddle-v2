@@ -15,7 +15,7 @@ const Popup = () => {
       </div>
     </div>
   );
-
+  // https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro=&explaintext=&titles=Malcolm_Gladwell
   return (
     <div className="container">
       <p className="h5">{pageDetails?.title}</p>
