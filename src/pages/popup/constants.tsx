@@ -97,7 +97,6 @@ export const usePopupBuilder = () => {
     const fetchWikiDetails = async (author) => {
         if (author !== 'Anonymous') {
             const baseUrl = wikiSearchUrl;
-            console.log('the author is - ', author);
             const firstName = author.split(" ")[0];
             const lastName = author.split(" ")[1];
             const searchParams = [firstName, lastName].reduce((acc, el) => {
@@ -113,7 +112,8 @@ export const usePopupBuilder = () => {
                 },
                 redirect: "follow"
             }).then(response => response.json())
-            const extract = Object.values(response?.query.pages)[0]?.extract;
+            const extractDetails: any = Object.values(response?.query.pages)[0];
+            const extract = extractDetails?.extract;
             const fewWords = extract.split(" (")[1].split(")")[0];
             const newPageDetails = { ...pageDetails };
             newPageDetails.fewWords = fewWords ?? 'No public info';

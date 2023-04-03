@@ -9,13 +9,13 @@ const Popup = () => {
     currentWeather,
   } = usePopupBuilder();
 
-  console.log(pageDetails);
   const displayLoading = () => (
     <div className="text-center">
       <div className="spinner-grow spinner-grow-sm text-success" id="loader" role="status">
       </div>
     </div>
   );
+
   return (
     <div className="container">
       <p className="h5">{pageDetails?.title}</p>
