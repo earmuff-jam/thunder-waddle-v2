@@ -9,17 +9,18 @@ const Popup = () => {
     currentWeather,
   } = usePopupBuilder();
 
+  console.log(pageDetails);
   const displayLoading = () => (
     <div className="text-center">
       <div className="spinner-grow spinner-grow-sm text-success" id="loader" role="status">
       </div>
     </div>
   );
-  // https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro=&explaintext=&titles=Malcolm_Gladwell
   return (
     <div className="container">
       <p className="h5">{pageDetails?.title}</p>
       <span className="badge bg-secondary sm-text">{pageDetails?.author}</span>
+      <span className="xs-text">{pageDetails?.fewWords}</span>
       <div className="alert-primary sm-text alert-custom" role="alert">{pageDetails?.quote}
       </div>
       {loading && displayLoading()}

@@ -4,10 +4,12 @@ export const publicHolidayBaseUrl = 'https://date.nager.at/api/v3/PublicHolidays
 export const defaultTimeZone = 'MST7MDT'; // mountain zone
 export const defaultCountrySelection = 'US';
 export const weatherUrl = 'https://api.open-meteo.com/v1/forecast?';
+export const wikiSearchUrl = 'https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro=&explaintext=&titles=';
 export const blankQuotes = {
     title: 'Inspirational Quotes',
     author: '',
     quote: '',
+    fewWords: '',
 };
 export const blankHoliday = {
     date: '',
@@ -92,7 +94,37 @@ export const usePopupBuilder = () => {
         });
         return response;
     }
-    useEffect(() => {
+    const fetchWikiDetails = async (author) => {
+        if (author !== 'Anonymous') {
+            const baseUrl = wikiSearchUrl;
+            console.log('the author is - ', author);
+            const firstName = author.split(" ")[0];
+            const lastName = author.split(" ")[1];
+            const searchParams = [firstName, lastName].reduce((acc, el) => {
+                acc += el + '_';
+                return acc;
+            }, '');
+            const completeUrl = baseUrl + searchParams;
+            const response = await fetch(completeUrl, {
+                method: 'GET',
+                mode: 'cors',
+                cache: 'no-cache',
+                headers: {
+                },
+                redirect: "follow"
+            }).then(response => response.json())
+            const extract = Object.values(response?.query.pages)[0]?.extract;
+            const fewWords = extract.split(" (")[1].split(")")[0];
+            const newPageDetails = { ...pageDetails };
+            newPageDetails.fewWords = fewWords ?? 'No public info';
+            setPageDetails({ ...newPageDetails });
+        } else {
+            const newPageDetails = { ...pageDetails };
+            newPageDetails.fewWords = "No public info";
+            setPageDetails({ ...newPageDetails });
+        }
+    };
+    const fetchRequiredApis = () => {
         Promise.all([fetchHolidaysV2, fetchQuotesV2])
             .then(([res1, res2]) => {
                 return Promise.all([res1(), res2()])
@@ -122,8 +154,16 @@ export const usePopupBuilder = () => {
                 copyQuote['quote'] = response2Json?.quote;
                 setPageDetails({ ...copyQuote });
             }).finally(() => setLoading(false));
+    }
+    useEffect(() => {
+        fetchRequiredApis();
         fetchWeather();
     }, []);
+
+    useEffect(() => {
+        fetchWikiDetails(pageDetails?.author);
+    }, [pageDetails.author]);
+
     return {
         loading,
         pageDetails,
