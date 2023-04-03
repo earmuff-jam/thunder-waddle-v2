@@ -1,7 +1,7 @@
 try {
   chrome.devtools.panels.create(
     "Dev Tools",
-    "icon-34.png",
+    "sm.png",
     "src/pages/panel/index.html"
   );
 } catch (e) {

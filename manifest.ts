@@ -19,13 +19,13 @@ const manifest: chrome.runtime.ManifestV3 = {
   },
   action: {
     default_popup: "src/pages/popup/index.html",
-    default_icon: "icon-34.png",
+    default_icon: "sm.png",
   },
   chrome_url_overrides: {
     newtab: "src/pages/newtab/index.html",
   },
   icons: {
-    "128": "icon-128.png",
+    "128": "sm.png",
   },
   content_scripts: [
     {
@@ -41,8 +41,8 @@ const manifest: chrome.runtime.ManifestV3 = {
       resources: [
         "assets/js/*.js",
         "assets/css/*.css",
-        "icon-128.png",
-        "icon-34.png",
+        "sm.png",
+        "sm.png",
       ],
       matches: ["*://*/*"],
     },
