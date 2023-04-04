@@ -125,8 +125,10 @@ export const usePopupBuilder = () => {
             const extract = extractDetails?.extract;
             const matchingString = extract.match(regexPattern);
             const newPageDetails = { ...pageDetails };
-            console.log(matchingString);
-            newPageDetails.fewWords = (matchingString !== null && matchingString[0]) ?? 'No public info';
+            const birthYr = matchingString[0] || 'N/A';
+            const deathYr = matchingString[1] || 'N/A';
+            newPageDetails.fewWords = matchingString !== null ? 
+            birthYr + " - " + deathYr : 'No public info';
             setPageDetails({ ...newPageDetails });
         }
     };
