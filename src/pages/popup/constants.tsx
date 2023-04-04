@@ -35,6 +35,10 @@ export const queryParams = [
     'daily',
     'timezone',
 ];
+// regexPattern to match all dates to bring dob and dod.
+export const regexPattern = /\b[A-Z][a-z]+ \d{1,2}, \d{4}\b/g;
+// string.match(regexPattern) => gives array of matching dates- just show them
+
 export const usePopupBuilder = () => {
     const [loading, setLoading] = useState(true);
     const [pageDetails, setPageDetails] = useState({ ...blankQuotes });
@@ -95,10 +99,15 @@ export const usePopupBuilder = () => {
         return response;
     }
     const fetchWikiDetails = async (author) => {
-        if (author !== 'Anonymous') {
+        if (author === "Anonymous" || author === "") {
+            const newPageDetails = { ...pageDetails };
+            newPageDetails.fewWords = "No public info";
+            setPageDetails({ ...newPageDetails });
+            return null;
+        } else {
             const baseUrl = wikiSearchUrl;
             const firstName = author.split(" ")[0];
-            const lastName = author.split(" ")[1];
+            const lastName = author.split(" ").pop(); // get last word
             const searchParams = [firstName, lastName].reduce((acc, el) => {
                 acc += el + '_';
                 return acc;
@@ -114,13 +123,10 @@ export const usePopupBuilder = () => {
             }).then(response => response.json())
             const extractDetails: any = Object.values(response?.query.pages)[0];
             const extract = extractDetails?.extract;
-            const fewWords = extract.split(" (")[1].split(")")[0];
+            const matchingString = extract.match(regexPattern);
             const newPageDetails = { ...pageDetails };
-            newPageDetails.fewWords = fewWords ?? 'No public info';
-            setPageDetails({ ...newPageDetails });
-        } else {
-            const newPageDetails = { ...pageDetails };
-            newPageDetails.fewWords = "No public info";
+            console.log(matchingString);
+            newPageDetails.fewWords = (matchingString !== null && matchingString[0]) ?? 'No public info';
             setPageDetails({ ...newPageDetails });
         }
     };

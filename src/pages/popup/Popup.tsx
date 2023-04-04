@@ -1,5 +1,6 @@
 import "@pages/popup/Popup.css";
 import { usePopupBuilder } from "./constants";
+// import MapChart from "./MapChart";
 
 const Popup = () => {
   const {
@@ -43,6 +44,7 @@ const Popup = () => {
                     <i className="bi bi-cloud-lightning-rain"></i>
                   }
                 </span>
+                {/* <MapChart /> */}
               </div>
               <div className="d-flex flex-row">
                 <div className="badge bg-secondary">
